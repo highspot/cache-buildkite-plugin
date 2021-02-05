@@ -18,7 +18,10 @@ function expand_templates() {
   while [[ "$CACHE_KEY" =~ (.*)\{\{\ *(.*)\ *\}\}(.*) ]]; do
     TEMPLATE_VALUE="${BASH_REMATCH[2]}"
     EXPANDED_VALUE=""
-    if [[ $TEMPLATE_VALUE == "checksum "* ]]; then
+    if [[ $TEMPLATE_VALUE == "checksums "* ]]; then
+      TARGET="$(echo -e "${TEMPLATE_VALUE/"checksums"/""}" | tr -d \' | tr -d \" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+      EXPANDED_VALUE=$(find . -type f -name "$TARGET" -exec $HASHER_BIN {} \; | sort -k 2 | $HASHER_BIN | awk '{print $1}')
+    elif [[ $TEMPLATE_VALUE == "checksum "* ]]; then
       TARGET="$(echo -e "${TEMPLATE_VALUE/"checksum"/""}" | tr -d \' | tr -d \" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
       EXPANDED_VALUE=$(find "$TARGET" -type f -exec $HASHER_BIN {} \; | sort -k 2 | $HASHER_BIN | awk '{print $1}')
     elif [[ $TEMPLATE_VALUE == "runner.os"* ]]; then
